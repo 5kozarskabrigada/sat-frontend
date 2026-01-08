@@ -11,6 +11,38 @@ import '@/styles/sat-layout.css';
 import '@/styles/sat-typography.css';
 import '@/styles/admin-dashboard.css';
 
+// at top of AdminDashboard file
+import { createStudent, type CreateStudentResponse } from '@/services/adminService';
+
+// inside component:
+const [newStudentName, setNewStudentName] = useState('');
+const [newStudentPhone, setNewStudentPhone] = useState('');
+const [creating, setCreating] = useState(false);
+const [createError, setCreateError] = useState<string | null>(null);
+const [createdStudent, setCreatedStudent] = useState<CreateStudentResponse | null>(null);
+
+const handleCreateStudent = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setCreating(true);
+  setCreateError(null);
+  setCreatedStudent(null);
+
+  try {
+    const res = await createStudent({
+      name: newStudentName,
+      phone: newStudentPhone,
+    });
+    setCreatedStudent(res);      // shows username + password
+    setNewStudentName('');
+    setNewStudentPhone('');
+  } catch (err: any) {
+    setCreateError(err.message || 'Failed to create student');
+  } finally {
+    setCreating(false);
+  }
+};
+
+
 const AdminDashboard: React.FC = () => {
   const { user } = useAuthContext();
   const [tests, setTests] = useState<TestSummaryResponse[]>([]);
