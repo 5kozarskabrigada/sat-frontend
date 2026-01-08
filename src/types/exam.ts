@@ -68,12 +68,16 @@ export interface SubmitExamResponse {
 
 
 // Summaries for admin / listing
+// src/types/exam.ts
+
 export interface TestSummaryResponse {
-  testId: string;
+  id: string;
   title: string;
   isActive: boolean;
   createdAt: string;
+  questionCount: number;
 }
+
 
 // Detailed test info (no questions, just config/sections)
 export interface TestDetailResponse {

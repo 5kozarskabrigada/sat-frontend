@@ -1,7 +1,12 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { MeResponse } from '../types';
-import { supabase } from '../services/supabaseClient';
-import { getMe, logout as logoutApi } from '../services/authService';
+// src/context/AuthContext.tsx
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import type { MeResponse } from '@/types/auth';
+import { getMe, logout as logoutApi } from '@/services/authService';
 
 interface AuthContextValue {
   user: MeResponse | null;
@@ -12,17 +17,14 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
     try {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        setUser(null);
-        return;
-      }
       const me = await getMe();
       setUser(me);
     } catch {
@@ -36,19 +38,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await refresh();
       setLoading(false);
     })();
-
-    const { data: sub } = supabase.auth.onAuthStateChange(async () => {
-      await refresh();
-    });
-
-    return () => {
-      sub.subscription.unsubscribe();
-    };
   }, []);
 
   const logout = async () => {
-    await logoutApi();
-    setUser(null);
+    try {
+      await logoutApi();
+    } finally {
+      setUser(null);
+    }
   };
 
   return (
@@ -58,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export function useAuthContext() {
+export function useAuthContext(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuthContext must be used within AuthProvider');
   return ctx;

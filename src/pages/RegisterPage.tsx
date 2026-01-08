@@ -1,10 +1,14 @@
+// src/pages/RegisterPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { register as registerApi, login as loginApi } from '../services/authService';
-import type { RegisterRequest, LoginRequest } from '../types/auth';
+import { register as registerApi, login as loginApi } from '@/services/authService';
+import type { RegisterRequest, LoginRequest } from '@/types/auth';
+import { useAuthContext } from '@/context/AuthContext';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const { refresh } = useAuthContext();
+
   const [isLogin, setIsLogin] = useState(true);
 
   const [name, setName] = useState('');
@@ -18,15 +22,18 @@ const RegisterPage: React.FC = () => {
     e.preventDefault();
     setBusy(true);
     setError(null);
+
     try {
       if (isLogin) {
-        const payload: LoginRequest = { email, password };
-        await loginApi(payload);
+        const payload: LoginRequest = { identifier: email, password };
+        await loginApi(payload);          // backend sets sat_jwt cookie
       } else {
-        const payload: RegisterRequest = { name, phone, email, password };
-        await registerApi(payload);
+        const payload: RegisterRequest = { name, phone, email };
+        await registerApi(payload);       // backend sets cookie
       }
-      navigate('/');
+
+      await refresh();                    // GET /auth/me with cookie
+      navigate('/');                      // or '/admin' for admin login
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -42,17 +49,29 @@ const RegisterPage: React.FC = () => {
           <>
             <label>
               Name
-              <input value={name} onChange={(e) => setName(e.target.value)} required />
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
             </label>
             <label>
               Phone
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} required />
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+              />
             </label>
           </>
         )}
         <label>
           Email
-          <input value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </label>
         <label>
           Password
