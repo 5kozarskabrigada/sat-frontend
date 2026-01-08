@@ -1,7 +1,7 @@
 // src/context/ExamContext.tsx
 import React, { createContext, useContext } from 'react';
-import { useExam } from '../hooks/useExam';
-import type { TestSectionInfo, QuestionResponse } from '../types/exam';
+import { useExam } from '@/hooks/useExam';
+import type { TestSectionInfo, QuestionResponse } from '@/types/exam';
 
 interface ExamContextValue {
   loading: boolean;
@@ -27,22 +27,23 @@ export const ExamProvider: React.FC<{
   accessCode: string;
   children: React.ReactNode;
 }> = ({ testId, accessCode, children }) => {
-  const {
-    loading,
-    test,
-    sections,
-    currentSectionIndex,
-    currentQuestionIndex,
-    currentQuestion,
-    currentSectionQuestions,
-    answers,
-    flags,
-    selectQuestion,
-    answerQuestion,
-    toggleFlag,
-    gotoNextQuestion,
-    gotoPrevQuestion,
-  } = useExam({ testId, accessCode });
+const {
+  loading,
+  test,
+  sections,
+  currentSectionIndex,
+  currentQuestionIndex,
+  currentQuestion,
+  answers,
+  flags,
+  selectQuestion,
+  answerQuestion,
+  toggleFlag,
+  gotoNextQuestion,
+  gotoPrevQuestion,
+  currentSectionQuestions: _currentSectionQuestions,
+} = useExam({ testId, accessCode });
+
 
   const value: ExamContextValue = {
     loading,
