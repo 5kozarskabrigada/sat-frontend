@@ -1,15 +1,15 @@
 // src/hooks/useExam.ts
 import { useEffect, useMemo, useState } from 'react';
-import {
+import type {
   TestWithQuestionsResponse,
   QuestionResponse,
   AutosaveAnswerItem,
   AutosaveRequest,
   SubmitExamRequest,
   SubmitExamResponse,
-} from '@/types/exam';
-import { getTestForStudent, autosaveResponses, submitExam } from '@/services/examService';
+} from '../types/exam';
 
+import { getTestForStudent, autosaveResponses, submitExam } from '../services/examService';
 interface UseExamOptions {
   testId: string;
   accessCode: string;

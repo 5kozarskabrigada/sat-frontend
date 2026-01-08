@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useAuthContext } from '@/context/AuthContext';
-import { getTests } from '@/services/examService';
-import type { TestSummaryResponse } from '@/types/exam';
+import { useAuthContext } from '../context/AuthContext';
+import { getTests } from '../services/examService';
+import type { TestSummaryResponse } from '../types/exam';
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard: React.FC = () => {

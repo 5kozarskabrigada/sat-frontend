@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { MeResponse } from '@/types/auth';
-import { supabase } from '@/services/supabaseClient';
-import { getMe, logout as logoutApi } from '@/services/authService';
+import type { MeResponse } from '../types';
+import { supabase } from '../services/supabaseClient';
+import { getMe, logout as logoutApi } from '../services/authService';
 
 interface AuthContextValue {
   user: MeResponse | null;

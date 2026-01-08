@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { register as registerApi, login as loginApi } from '@/services/authService';
-import type { RegisterRequest, LoginRequest } from '@/types/auth';
+import { register as registerApi, login as loginApi } from '../services/authService';
+import type { RegisterRequest, LoginRequest } from '../types/auth';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();

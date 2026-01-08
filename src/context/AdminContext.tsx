@@ -1,7 +1,7 @@
 // src/context/AdminContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { TestSummaryResponse } from '@/types/exam';
-import { getTests } from '@/services/examService';
+import type { TestSummaryResponse } from '../types/exam';
+import { getTests } from '../services/examService';
 
 interface AdminContextValue {
   tests: TestSummaryResponse[];
