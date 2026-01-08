@@ -1,53 +1,27 @@
+// src/pages/AdminDashboard.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { useAuthContext } from '@/context/AuthContext';
 import { getTests } from '@/services/examService';
+import { createStudent, type CreateStudentResponse } from '@/services/adminService';
 import type { TestSummaryResponse } from '@/types/exam';
 
-// global SAT styles
 import '@/styles/sat-colors.css';
 import '@/styles/sat-layout.css';
 import '@/styles/sat-typography.css';
 import '@/styles/admin-dashboard.css';
-
-// at top of AdminDashboard file
-import { createStudent, type CreateStudentResponse } from '@/services/adminService';
-
-// inside component:
-const [newStudentName, setNewStudentName] = useState('');
-const [newStudentPhone, setNewStudentPhone] = useState('');
-const [creating, setCreating] = useState(false);
-const [createError, setCreateError] = useState<string | null>(null);
-const [createdStudent, setCreatedStudent] = useState<CreateStudentResponse | null>(null);
-
-const handleCreateStudent = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setCreating(true);
-  setCreateError(null);
-  setCreatedStudent(null);
-
-  try {
-    const res = await createStudent({
-      name: newStudentName,
-      phone: newStudentPhone,
-    });
-    setCreatedStudent(res);      // shows username + password
-    setNewStudentName('');
-    setNewStudentPhone('');
-  } catch (err: any) {
-    setCreateError(err.message || 'Failed to create student');
-  } finally {
-    setCreating(false);
-  }
-};
-
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuthContext();
   const [tests, setTests] = useState<TestSummaryResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentPhone, setNewStudentPhone] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createdStudent, setCreatedStudent] = useState<CreateStudentResponse | null>(null);
 
   const navigate = useNavigate();
 
@@ -58,19 +32,15 @@ const AdminDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await getTests(); // calls GET /api/tests on your backend [file:208]
-        if (!cancelled) {
-          setTests(data);
-        }
+        const data = await getTests();
+        if (!cancelled) setTests(data);
       } catch (err) {
         if (!cancelled) {
           console.error(err);
           setError('Failed to load tests. Please try again.');
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     })();
 
@@ -79,13 +49,32 @@ const AdminDashboard: React.FC = () => {
     };
   }, []);
 
+  const handleCreateStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    setCreateError(null);
+    setCreatedStudent(null);
+
+    try {
+      const res = await createStudent({
+        name: newStudentName,
+        phone: newStudentPhone,
+      });
+      setCreatedStudent(res);
+      setNewStudentName('');
+      setNewStudentPhone('');
+    } catch (err: any) {
+      setCreateError(err.message || 'Failed to create student');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   if (!user || user.role !== 'ADMIN') {
     return (
       <div className="admin-dashboard admin-dashboard--unauthorized">
         <h1 className="sat-heading-xl">Access denied</h1>
-        <p className="sat-text-m">
-          You must be an admin to view this dashboard.
-        </p>
+        <p className="sat-text-m">You must be an admin to view this dashboard.</p>
       </div>
     );
   }
@@ -131,105 +120,45 @@ const AdminDashboard: React.FC = () => {
       </header>
 
       <main className="admin-main">
-        <section className="admin-panel admin-panel--tests">
-          <div className="admin-panel-header">
-            <h2 className="sat-heading-l">Tests</h2>
+        {/* existing tests and quick links sections here */}
+
+        <section className="admin-panel admin-panel--students">
+          <h2 className="sat-heading-l">Create student account</h2>
+          <form onSubmit={handleCreateStudent} className="admin-student-form">
+            <label>
+              Name and surname
+              <input
+                value={newStudentName}
+                onChange={(e) => setNewStudentName(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Phone number
+              <input
+                value={newStudentPhone}
+                onChange={(e) => setNewStudentPhone(e.target.value)}
+                required
+              />
+            </label>
             <button
-              type="button"
+              type="submit"
               className="admin-primary-button"
-              onClick={() => navigate('/admin/create-test')}
+              disabled={creating}
             >
-              + New test
+              {creating ? 'Creating…' : 'Create student'}
             </button>
-          </div>
+          </form>
 
-          {tests.length === 0 ? (
-            <p className="sat-text-m admin-empty-state">
-              No tests created yet. Start by creating your first SAT practice
-              test.
-            </p>
-          ) : (
-            <ul className="admin-test-list">
-              {tests.map((t) => (
-                <li key={t.id} className="admin-test-item">
-                  <div className="admin-test-main">
-                    <h3 className="sat-heading-m">{t.title}</h3>
-                    <p className="sat-text-m admin-test-meta">
-                      {t.questionCount} questions •{' '}
-                      {t.isActive ? 'Active' : 'Inactive'}
-                    </p>
-                  </div>
+          {createError && <p className="admin-error-text">{createError}</p>}
 
-                  <div className="admin-test-actions">
-                    <button
-                      type="button"
-                      className="admin-secondary-button"
-                      onClick={() =>
-                        navigate(`/exam/${t.id}?code=DEMO`)
-                      }
-                    >
-                      Preview
-                    </button>
-                    <button
-                      type="button"
-                      className={
-                        t.isActive
-                          ? 'admin-secondary-button admin-secondary-button--danger'
-                          : 'admin-primary-button'
-                      }
-                      onClick={() =>
-                        navigate(`/admin/tests/${t.id}/toggle-active`)
-                      }
-                    >
-                      {t.isActive ? 'Deactivate' : 'Activate'}
-                    </button>
-                    <button
-                      type="button"
-                      className="admin-secondary-button"
-                      onClick={() =>
-                        navigate(`/admin/results/${t.id}`)
-                      }
-                    >
-                      Results
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+          {createdStudent && (
+            <div className="admin-created-student sat-text-m">
+              <p><strong>Username:</strong> {createdStudent.username}</p>
+              <p><strong>Password:</strong> {createdStudent.password}</p>
+              <p>Give these credentials to the student so they can log in.</p>
+            </div>
           )}
-        </section>
-
-        <section className="admin-panel admin-panel--sidebar">
-          <h2 className="sat-heading-l">Quick links</h2>
-          <ul className="admin-quick-links">
-            <li>
-              <button
-                type="button"
-                className="admin-link-button"
-                onClick={() => navigate('/admin/access-codes')}
-              >
-                Manage access codes
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                className="admin-link-button"
-                onClick={() => navigate('/admin/anti-cheat')}
-              >
-                Anti‑cheat logs
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                className="admin-link-button"
-                onClick={() => navigate('/admin/health')}
-              >
-                API health
-              </button>
-            </li>
-          </ul>
         </section>
       </main>
     </div>
