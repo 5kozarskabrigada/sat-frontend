@@ -5,6 +5,7 @@ import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
 
 import LandingPage from '@/pages/LandingPage';
+import RegisterPage from '@/pages/RegisterPage';
 import AdminDashboard from '@/pages/AdminDashboard';
 import ExamInterface from '@/pages/ExamInterface';
 import ResultsPage from '@/pages/ResultsPage';
@@ -20,6 +21,7 @@ const App: React.FC = () => {
       <div className="sat-app-shell">
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/exam/:testId" element={<ExamInterface />} />
           <Route path="/results/:testId/:studentId" element={<ResultsPage />} />
