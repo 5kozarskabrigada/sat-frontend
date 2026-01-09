@@ -23,27 +23,26 @@ api.interceptors.request.use(
 
 
 
-export async function apiFetch<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
-  const res = await fetch(`${apiBase}${path}`, {
-    ...options,
-    credentials: 'include',
+// src/services/api.ts
+export async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}${url}`, {
     headers: {
       'Content-Type': 'application/json',
       ...(options.headers || {}),
     },
+    credentials: 'include', // critical so sat_jwt cookie is sent
+    ...options,
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(text || `API error ${res.status}`);
+    const text = await res.text();
+    throw new Error(text || res.statusText);
   }
 
+  // For 204/empty responses, avoid JSON parse error
   if (res.status === 204) {
-    return undefined as unknown as T;
+    return undefined as T;
   }
 
-  return (await res.json()) as T;
+  return res.json() as Promise<T>;
 }
