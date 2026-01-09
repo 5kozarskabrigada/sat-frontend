@@ -1,17 +1,27 @@
 // src/services/api.ts
 import axios from 'axios';
-import { supabase } from './supabaseClient';
-const apiBase = import.meta.env.VITE_API_BASE || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://sat-backend-ftt2.onrender.com/api';
+// Axios instance used by examService and useAPI
 export const api = axios.create({
-    baseURL: apiBase,
+    baseURL: API_BASE_URL,
+    withCredentials: true, // send sat_jwt cookie
 });
-api.interceptors.request.use(async (config) => {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    if (token) {
-        // preserve existing AxiosHeaders object
-        config.headers = config.headers ?? {};
-        config.headers['Authorization'] = `Bearer ${token}`;
+// Fetch-based helper used by authService (and anything else you prefer)
+export async function apiFetch(url, options = {}) {
+    const res = await fetch(`${API_BASE_URL}${url}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            ...(options.headers || {}),
+        },
+        credentials: 'include',
+        ...options,
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || res.statusText);
     }
-    return config;
-});
+    if (res.status === 204) {
+        return undefined;
+    }
+    return res.json();
+}

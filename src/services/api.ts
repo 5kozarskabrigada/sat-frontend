@@ -1,36 +1,23 @@
 // src/services/api.ts
-import axios, { type InternalAxiosRequestConfig } from 'axios';
-import { supabase } from './supabaseClient';
+import axios from 'axios';
 
-const apiBase = import.meta.env.VITE_API_BASE || '/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? 'https://sat-backend-ftt2.onrender.com/api';
 
+// Axios instance used by examService and useAPI
 export const api = axios.create({
-  baseURL: apiBase,
+  baseURL: API_BASE_URL,
+  withCredentials: true, // send sat_jwt cookie
 });
 
-api.interceptors.request.use(
-  async (config: InternalAxiosRequestConfig) => {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    if (token) {
-      // preserve existing AxiosHeaders object
-      config.headers = config.headers ?? {};
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-);
-
-
-
-// src/services/api.ts
+// Fetch-based helper used by authService (and anything else you prefer)
 export async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}${url}`, {
+  const res = await fetch(`${API_BASE_URL}${url}`, {
     headers: {
       'Content-Type': 'application/json',
       ...(options.headers || {}),
     },
-    credentials: 'include', // critical so sat_jwt cookie is sent
+    credentials: 'include',
     ...options,
   });
 
@@ -39,7 +26,6 @@ export async function apiFetch<T>(url: string, options: RequestInit = {}): Promi
     throw new Error(text || res.statusText);
   }
 
-  // For 204/empty responses, avoid JSON parse error
   if (res.status === 204) {
     return undefined as T;
   }
